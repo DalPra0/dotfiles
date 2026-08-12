@@ -169,3 +169,9 @@ echo " 1. Se você fez backup das chaves SSH em iCloud/Seguranca/chaves_ssh_priv
 echo " 2. Reinicie o terminal ou execute: source ~/.zshrc"
 echo " 3. Seu Zen Browser já foi restaurado com suas abas e senhas!"
 echo ""
+
+# 8. Instalar Antigravity (AGY / Antigravity Agent)
+info "Instalando Antigravity CLI e Antigravity App..."
+if ! command -v agy &>/dev/null; then
+    curl -fsSL https://antigravity.google.com/install.sh | bash || true
+fi
