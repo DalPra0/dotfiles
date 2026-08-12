@@ -88,18 +88,23 @@ fi
 # 5. Criar Backup Criptografado das Chaves SSH e Credenciais
 info "5/5 Empacotando chaves SSH em arquivo criptografado..."
 TEMP_DIR="$(mktemp -d)"
+mkdir -p "$TEMP_DIR/ssh_backup"
+
 if [[ -d "$HOME/.ssh" ]]; then
-    cp -R "$HOME/.ssh" "$TEMP_DIR/"
+    cp -R "$HOME/.ssh" "$TEMP_DIR/ssh_backup/" 2>/dev/null || true
 fi
 if [[ -d "$HOME/.gnupg" ]]; then
-    cp -R "$HOME/.gnupg" "$TEMP_DIR/"
+    cp -R "$HOME/.gnupg" "$TEMP_DIR/ssh_backup/" 2>/dev/null || true
 fi
+
+# Remover sockets de agente SSH se existirem no temp
+find "$TEMP_DIR/ssh_backup" -type s -delete 2>/dev/null || true
 
 ZIP_DEST="$BACKUP_DIR/Seguranca/chaves_ssh_privadas.zip"
 rm -f "$ZIP_DEST" 2>/dev/null || true
 
 echo "Por favor, digite uma senha para proteger o arquivo de chaves SSH (guarde esta senha!):"
-zip -e -r "$ZIP_DEST" -j "$TEMP_DIR"/*
+(cd "$TEMP_DIR/ssh_backup" && zip -e -r "$ZIP_DEST" .)
 
 rm -rf "$TEMP_DIR"
 success "Chaves salvas de forma segura em $ZIP_DEST"
