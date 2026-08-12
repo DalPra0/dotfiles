@@ -1,0 +1,27 @@
+# Arquivos do sistema macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Históricos e arquivos de log sensíveis
+*.log
+*.history
+.zsh_history
+.bash_history
+
+# Chaves de API e Segredos
+*.pem
+*.key
+*.pub
+id_rsa*
+id_ed25519*
+.env
+.env.*
+
+# Backups temporários
+*.bak
+*.swp
+*.tmp
