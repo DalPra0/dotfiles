@@ -2,8 +2,8 @@
 
 # ==============================================================================
 # Mac Setup & Restore Script - DalPra0
-# Este script restaura todos os seus aplicativos, CLI tools, dotfiles e
-# configurações em um Mac recém-formatado.
+# Este script restaura todos os seus aplicativos, CLI tools, dotfiles,
+# perfil do Zen Browser e projetos no seu Mac recém-formatado.
 # ==============================================================================
 
 set -e
@@ -20,6 +20,7 @@ success() { echo "${GREEN}${BOLD}[OK]${RESET} $1"; }
 warn() { echo "${YELLOW}${BOLD}[AVISO]${RESET} $1"; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ICLOUD_BACKUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/Backup_Mac_Formatacao"
 
 echo ""
 echo "${BOLD}====================================================${RESET}"
@@ -44,7 +45,6 @@ if ! command -v brew &>/dev/null; then
     info "Instalando Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
-    # Adicionar brew ao PATH na sessão atual para Apple Silicon / Intel
     if [[ -f "/opt/homebrew/bin/brew" ]]; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
     elif [[ -f "/usr/local/bin/brew" ]]; then
@@ -71,11 +71,10 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     success "Oh My Zsh instalado."
 fi
 
-# 5. Criar diretórios de configuração
+# 5. Restaurar Dotfiles & Configurações de Aplicativos
 info "Restaurando arquivos de configuração (dotfiles)..."
 mkdir -p "$HOME/.config"
 
-# Função auxiliar para fazer backup de configs antigas e criar cópias/symlinks
 restore_file() {
     local src="$1"
     local dest="$2"
@@ -114,16 +113,48 @@ restore_dir "$SCRIPT_DIR/config/spotify-player" "$HOME/.config/spotify-player"
 restore_dir "$SCRIPT_DIR/config/zed" "$HOME/.config/zed"
 restore_dir "$SCRIPT_DIR/config/aerospace" "$HOME/.config/aerospace"
 
-# 6. Preferências Customizadas do macOS
+# 6. Restaurar Backup do iCloud se disponível
+if [[ -d "$ICLOUD_BACKUP" ]]; then
+    info "Encontrado backup do iCloud Drive em $ICLOUD_BACKUP!"
+
+    # 6.1 Restaurar Perfil do Zen Browser
+    if [[ -d "$ICLOUD_BACKUP/ZenBrowser" ]]; then
+        info "Restaurando perfil completo do Zen Browser (abas, favoritos, senhas)..."
+        mkdir -p "$HOME/Library/Application Support/Zen"
+        rsync -av "$ICLOUD_BACKUP/ZenBrowser/" "$HOME/Library/Application Support/Zen/"
+        success "Perfil do Zen Browser restaurado com sucesso!"
+    fi
+
+    # 6.2 Restaurar Pasta Developer
+    if [[ -d "$ICLOUD_BACKUP/Developer" ]]; then
+        info "Restaurando pasta Developer (projetos)..."
+        mkdir -p "$HOME/Developer"
+        rsync -av "$ICLOUD_BACKUP/Developer/" "$HOME/Developer/"
+        success "Pasta Developer restaurada!"
+    fi
+
+    # 6.3 Restaurar Projetos IDEs
+    if [[ -d "$ICLOUD_BACKUP/Projetos_IDEs" ]]; then
+        info "Restaurando projetos de IDEs (CLion, IntelliJ, PyCharm)..."
+        for ide_folder in "$ICLOUD_BACKUP/Projetos_IDEs/"*; do
+            if [[ -d "$ide_folder" ]]; then
+                ide_name=$(basename "$ide_folder")
+                mkdir -p "$HOME/$ide_name"
+                rsync -av "$ide_folder/" "$HOME/$ide_name/"
+            fi
+        done
+        success "Projetos de IDEs restaurados!"
+    fi
+else
+    warn "Nenhum backup automático do iCloud foi detectado ainda. Você pode sincronizar o iCloud Drive mais tarde."
+fi
+
+# 7. Preferências Customizadas do macOS
 info "Aplicando preferências recomendadas do macOS..."
-# Exibir arquivos ocultos no Finder
 defaults write com.apple.finder AppleShowAllFiles -bool true
-# Exibir barra de caminho no Finder
 defaults write com.apple.finder ShowPathbar -bool true
-# Velocidade de repetição das teclas
 defaults write NSGlobalDomain KeyRepeat -int 2
 defaults write NSGlobalDomain InitialKeyRepeat -int 15
-# Manter ícones da mesa exibidos
 defaults write com.apple.finder CreateDesktop -bool true
 
 killall Finder &>/dev/null || true
@@ -134,7 +165,7 @@ echo "${GREEN}${BOLD}      Restauração Concluída com Sucesso!            ${RE
 echo "${GREEN}${BOLD}====================================================${RESET}"
 echo ""
 echo "Próximos passos recomendados:"
-echo " 1. Se você fez backup das suas chaves SSH (~/.ssh), descompacte-as agora."
+echo " 1. Se você fez backup das chaves SSH em iCloud/Seguranca/chaves_ssh_privadas.zip, descompacte-as em ~/.ssh/"
 echo " 2. Reinicie o terminal ou execute: source ~/.zshrc"
-echo " 3. Faça login nos seus aplicativos instalados (GitHub, Chrome, Notion, Figma, etc.)."
+echo " 3. Seu Zen Browser já foi restaurado com suas abas e senhas!"
 echo ""
