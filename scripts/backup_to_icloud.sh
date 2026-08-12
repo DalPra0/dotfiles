@@ -32,10 +32,10 @@ echo "${BOLD}====================================================${RESET}"
 echo "Destino: $BACKUP_DIR"
 echo ""
 
-mkdir -p "$BACKUP_DIR"/{Developer,ZenBrowser,Projetos_IDEs,Dotfiles,Seguranca,OutrasPastas}
+mkdir -p "$BACKUP_DIR"/{Developer,ZenBrowser,Raycast,Projetos_IDEs,Dotfiles,Seguranca,OutrasPastas}
 
 # 1. Backup do Zen Browser (Perfil, Abas, Senhas, Extensões)
-info "1/5 Backup do Zen Browser (Perfil completo, senhas, abas)..."
+info "1/6 Backup do Zen Browser (Perfil completo, senhas, abas)..."
 ZEN_SRC="$HOME/Library/Application Support/Zen"
 if [[ -d "$ZEN_SRC" ]]; then
     rsync -av --progress --exclude="Cache*" --exclude="Crash Reports" "$ZEN_SRC/" "$BACKUP_DIR/ZenBrowser/"
@@ -44,8 +44,22 @@ else
     warn "Diretório do Zen Browser não encontrado."
 fi
 
-# 2. Backup da Pasta Developer (ignorando arquivos temporários/pesados)
-info "2/5 Backup da pasta Developer (Projetos de Código)..."
+# 2. Backup do Raycast (Extensões, Atalhos, Ajustes de IA e Dados)
+info "2/6 Backup do Raycast (Extensões, Atalhos, Snippets, IA)..."
+RAYCAST_APP_SUP="$HOME/Library/Application Support/com.raycast.macos"
+RAYCAST_CONF="$HOME/.config/raycast"
+mkdir -p "$BACKUP_DIR/Raycast/ApplicationSupport" "$BACKUP_DIR/Raycast/config"
+
+if [[ -d "$RAYCAST_APP_SUP" ]]; then
+    rsync -av --progress "$RAYCAST_APP_SUP/" "$BACKUP_DIR/Raycast/ApplicationSupport/"
+fi
+if [[ -d "$RAYCAST_CONF" ]]; then
+    rsync -av --progress "$RAYCAST_CONF/" "$BACKUP_DIR/Raycast/config/"
+fi
+success "Raycast completo salvo no iCloud!"
+
+# 3. Backup da Pasta Developer (ignorando arquivos temporários/pesados)
+info "3/6 Backup da pasta Developer (Projetos de Código)..."
 DEV_SRC="$HOME/Developer"
 if [[ -d "$DEV_SRC" ]]; then
     rsync -av --progress \
@@ -62,8 +76,8 @@ if [[ -d "$DEV_SRC" ]]; then
     success "Pasta Developer salva no iCloud!"
 fi
 
-# 3. Backup dos Projetos de IDEs (CLion, Idea, PyCharm)
-info "3/5 Backup de projetos CLion, IntelliJ e PyCharm..."
+# 4. Backup dos Projetos de IDEs (CLion, Idea, PyCharm)
+info "4/6 Backup de projetos CLion, IntelliJ e PyCharm..."
 for ide_dir in "$HOME/IdeaProjects" "$HOME/CLionProjects" "$HOME/PycharmProjects" "$HOME/PyCharmMiscProject"; do
     if [[ -d "$ide_dir" ]]; then
         dirname=$(basename "$ide_dir")
@@ -77,16 +91,16 @@ for ide_dir in "$HOME/IdeaProjects" "$HOME/CLionProjects" "$HOME/PycharmProjects
 done
 success "Projetos de IDEs salvos no iCloud!"
 
-# 4. Backup do Repositório de Dotfiles & Brewfile
-info "4/5 Copiando repositório de Dotfiles para o iCloud..."
+# 5. Backup do Repositório de Dotfiles & Brewfile
+info "5/6 Copiando repositório de Dotfiles para o iCloud..."
 DOTFILES_SRC="$HOME/.gemini/antigravity/scratch/dotfiles"
 if [[ -d "$DOTFILES_SRC" ]]; then
     rsync -av --progress "$DOTFILES_SRC/" "$BACKUP_DIR/Dotfiles/"
     success "Dotfiles salvos no iCloud!"
 fi
 
-# 5. Criar Backup Criptografado das Chaves SSH e Credenciais
-info "5/5 Empacotando chaves SSH em arquivo criptografado..."
+# 6. Criar Backup Criptografado das Chaves SSH e Credenciais
+info "6/6 Empacotando chaves SSH em arquivo criptografado..."
 TEMP_DIR="$(mktemp -d)"
 mkdir -p "$TEMP_DIR/ssh_backup"
 
@@ -109,8 +123,7 @@ echo "Por favor, digite uma senha para proteger o arquivo de chaves SSH (guarde 
 rm -rf "$TEMP_DIR"
 success "Chaves salvas de forma segura em $ZIP_DEST"
 
-# 6. Copiar outras pastas soltas importantes (ex: Transcricoes, Fila)
-info "6/6 Copiando pastas adicionais importantes..."
+# Copiar outras pastas soltas importantes
 for folder in "$HOME/Fila" "$HOME/Transcricoes" "$HOME/RedragonMouseRebindMac"; do
     if [[ -d "$folder" ]]; then
         rsync -av --progress "$folder/" "$BACKUP_DIR/OutrasPastas/$(basename "$folder")/"
@@ -127,6 +140,7 @@ echo "Estrutura criada no seu iCloud Drive:"
 echo " 📁 Backup_Mac_Formatacao/"
 echo "    ├── 📁 Developer/          (Seus projetos de código)"
 echo "    ├── 📁 ZenBrowser/         (Seu perfil, abas e senhas do Zen)"
+echo "    ├── 📁 Raycast/            (Extensões, atalhos, IA e configs do Raycast)"
 echo "    ├── 📁 Projetos_IDEs/      (CLion, IntelliJ, PyCharm)"
 echo "    ├── 📁 Dotfiles/           (Brewfile e scripts de restauração)"
 echo "    ├── 📁 Seguranca/          (Arquivo ZIP com chaves SSH)"

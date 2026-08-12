@@ -3,7 +3,7 @@
 # ==============================================================================
 # Mac Setup & Restore Script - DalPra0
 # Este script restaura todos os seus aplicativos, CLI tools, dotfiles,
-# perfil do Zen Browser e projetos no seu Mac recém-formatado.
+# perfil do Zen Browser, Raycast e projetos no seu Mac recém-formatado.
 # ==============================================================================
 
 set -e
@@ -54,7 +54,7 @@ else
     success "Homebrew já instalado."
 fi
 
-# 3. Atualizar Homebrew e Instalar Brewfile
+# 3. Atualizar Homebrew e Instalar Brewfile (incluindo Raycast, Zen, Cursor, etc.)
 info "Instalando todos os aplicativos, CLI tools e casks via Brewfile..."
 brew update
 if [[ -f "$SCRIPT_DIR/Brewfile" ]]; then
@@ -125,7 +125,21 @@ if [[ -d "$ICLOUD_BACKUP" ]]; then
         success "Perfil do Zen Browser restaurado com sucesso!"
     fi
 
-    # 6.2 Restaurar Pasta Developer
+    # 6.2 Restaurar Raycast (Extensões, Atalhos, IA, Snippets)
+    if [[ -d "$ICLOUD_BACKUP/Raycast" ]]; then
+        info "Restaurando dados e extensoes do Raycast..."
+        if [[ -d "$ICLOUD_BACKUP/Raycast/ApplicationSupport" ]]; then
+            mkdir -p "$HOME/Library/Application Support/com.raycast.macos"
+            rsync -av "$ICLOUD_BACKUP/Raycast/ApplicationSupport/" "$HOME/Library/Application Support/com.raycast.macos/"
+        fi
+        if [[ -d "$ICLOUD_BACKUP/Raycast/config" ]]; then
+            mkdir -p "$HOME/.config/raycast"
+            rsync -av "$ICLOUD_BACKUP/Raycast/config/" "$HOME/.config/raycast/"
+        fi
+        success "Dados do Raycast restaurados com sucesso!"
+    fi
+
+    # 6.3 Restaurar Pasta Developer
     if [[ -d "$ICLOUD_BACKUP/Developer" ]]; then
         info "Restaurando pasta Developer (projetos)..."
         mkdir -p "$HOME/Developer"
@@ -133,7 +147,7 @@ if [[ -d "$ICLOUD_BACKUP" ]]; then
         success "Pasta Developer restaurada!"
     fi
 
-    # 6.3 Restaurar Projetos IDEs
+    # 6.4 Restaurar Projetos IDEs
     if [[ -d "$ICLOUD_BACKUP/Projetos_IDEs" ]]; then
         info "Restaurando projetos de IDEs (CLion, IntelliJ, PyCharm)..."
         for ide_folder in "$ICLOUD_BACKUP/Projetos_IDEs/"*; do
@@ -149,7 +163,13 @@ else
     warn "Nenhum backup automático do iCloud foi detectado ainda. Você pode sincronizar o iCloud Drive mais tarde."
 fi
 
-# 7. Preferências Customizadas do macOS
+# 7. Instalar Antigravity CLI e App
+info "Instalando Antigravity CLI..."
+if ! command -v agy &>/dev/null; then
+    curl -fsSL https://antigravity.google.com/install.sh | bash || true
+fi
+
+# 8. Preferências Customizadas do macOS
 info "Aplicando preferências recomendadas do macOS..."
 defaults write com.apple.finder AppleShowAllFiles -bool true
 defaults write com.apple.finder ShowPathbar -bool true
@@ -164,14 +184,3 @@ echo "${GREEN}${BOLD}====================================================${RESET
 echo "${GREEN}${BOLD}      Restauração Concluída com Sucesso!            ${RESET}"
 echo "${GREEN}${BOLD}====================================================${RESET}"
 echo ""
-echo "Próximos passos recomendados:"
-echo " 1. Se você fez backup das chaves SSH em iCloud/Seguranca/chaves_ssh_privadas.zip, descompacte-as em ~/.ssh/"
-echo " 2. Reinicie o terminal ou execute: source ~/.zshrc"
-echo " 3. Seu Zen Browser já foi restaurado com suas abas e senhas!"
-echo ""
-
-# 8. Instalar Antigravity (AGY / Antigravity Agent)
-info "Instalando Antigravity CLI e Antigravity App..."
-if ! command -v agy &>/dev/null; then
-    curl -fsSL https://antigravity.google.com/install.sh | bash || true
-fi
