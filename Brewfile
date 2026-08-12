@@ -29,6 +29,8 @@ brew "fzf"
 brew "node"
 # Interact with Google Gemini AI models from the command-line
 brew "gemini-cli"
+# GitHub command-line tool
+brew "gh"
 # Distributed revision control system
 brew "git"
 # Library for communicating with USB and Bluetooth HID devices
@@ -47,6 +49,8 @@ brew "libusb"
 brew "llama.cpp"
 # Rainbows and unicorns in your console!
 brew "lolcat"
+# Mac App Store command-line interface
+brew "mas"
 # Java-based project management
 brew "maven"
 # Open source relational database management system
@@ -61,7 +65,6 @@ brew "nyancat"
 brew "ollama"
 # Development kit for the Java programming language
 brew "openjdk@11"
-# Development kit for the Java programming language
 brew "openjdk@17"
 # Highly capable, feature-rich programming language
 brew "perl"
@@ -73,7 +76,6 @@ brew "pv"
 brew "python@3.13"
 # Command-line YAML and XML processor that wraps jq
 brew "python-yq"
-# Interpreted, interactive, object-oriented programming language
 brew "python@3.11"
 # CLI proxy to minimize LLM token consumption
 brew "rtk"
@@ -81,7 +83,6 @@ brew "rtk"
 brew "rust"
 # Multi-media library with bindings for multiple languages
 brew "sfml"
-# Multi-media library with bindings for multiple languages
 brew "sfml@2"
 # Forensic toolkit
 brew "sleuthkit"
@@ -140,7 +141,6 @@ cask "github"
 cask "google-chrome"
 # Open Source Multimedia Framework
 cask "gstreamer-development"
-# Open Source Multimedia Framework
 cask "gstreamer-runtime"
 # Menu bar manager
 cask "jordanbaird-ice"
@@ -171,6 +171,10 @@ cask "vlc"
 cask "warp"
 # Multiplayer code editor
 cask "zed"
+mas "Keynote", id: 361285480
+mas "Keynote", id: 409183694
+mas "WhatsApp", id: 310633997
+mas "Xcode", id: 497799835
 vscode "anysphere.cpptools"
 vscode "anysphere.cursorpyright"
 vscode "anysphere.remote-containers"
@@ -194,3 +198,17 @@ vscode "wokwi.wokwi-vscode"
 vscode "yzhang.markdown-all-in-one"
 cargo "spotify_player"
 npm "corepack"
+
+# Casks adicionais auditados de /Applications
+cask "canva"
+cask "claude"
+cask "cursor"
+cask "discord"
+cask "ghostty"
+cask "obsidian"
+cask "prism-launcher"
+cask "spotify"
+cask "steam"
+cask "visual-studio-code"
+cask "zen-browser"
+cask "zoom"
