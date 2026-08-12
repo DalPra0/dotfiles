@@ -1,15 +1,25 @@
-# 🚀 macOS Dotfiles & Setup Automatizado (DalPra0)
+# ⚡ RESTAURAÇÃO EM 1 CLIQUE (PÓS-FORMATAÇÃO)
 
-Este repositório contém a configuração completa do meu macOS, lista de aplicativos instalados (via Homebrew) e um script para reconfigurar todo o sistema em **1 clique** após uma formatação do zero.
+> Abra o Terminal no Mac recém-formatado e cole o comando abaixo:
+
+```bash
+git clone https://github.com/DalPra0/dotfiles.git ~/dotfiles && cd ~/dotfiles && ./setup.sh
+```
 
 ---
 
-## 📂 Estrutura do Repositório
+# 🚀 macOS Dotfiles & Backup Automatizado (DalPra0)
+
+Este repositório contém a configuração completa do seu macOS, lista de todos os aplicativos instalados (via Homebrew/Brewfile), perfil do **Zen Browser**, extensões do **Raycast**, projetos da pasta **`Developer`** e um script para reconfigurar todo o sistema em **1 clique** após uma formatação do zero.
+
+---
+
+## 📂 O que está salvo e configurado
 
 ```text
 .
-├── Brewfile              # Todos os Apps (Casks), ferramentas CLI e extensões instaladas
-├── setup.sh              # Script de restauração automatizada pós-formatação
+├── Brewfile              # Todos os Apps (Casks), ferramentas CLI e extensões (Raycast, Cursor, Chrome, Zen, etc.)
+├── setup.sh              # Script de restauração automatizada pós-formatação (1 Clique)
 ├── .gitignore            # Proteção contra envio de chaves privadas e logs
 ├── shell/
 │   ├── .zshrc           # Configuração do Zsh (aliases, temas, variáveis)
@@ -24,72 +34,53 @@ Este repositório contém a configuração completa do meu macOS, lista de aplic
 │   ├── spotify-player/  # Configuração do player Spotify CLI
 │   └── aerospace/       # Tiling Window Manager
 └── scripts/
-    └── backup_private.sh # Script para backup seguro de chaves SSH
+    ├── backup_to_icloud.sh # Script para backup completo no iCloud (Developer, Zen, Raycast, IDEs, SSH)
+    └── backup_private.sh   # Script de backup de chaves SSH
 ```
 
 ---
 
-## 📋 Passo 1: O que fazer ANTES de formatar o Mac
+## ☁️ Backup no iCloud Drive (Antes de Formatar)
 
-### 1.1 Gerar o backup privado das suas chaves SSH
-Execute o script abaixo para criar um arquivo `.zip` com senha contendo suas chaves SSH (`~/.ssh`):
-```bash
-./scripts/backup_private.sh
-```
-> **ATENÇÃO:** Mova o arquivo `.zip` gerado na Mesa (Desktop) para um **Pen Drive, HD Externo ou iCloud Drive**!
-
-### 1.2 Subir este repositório para o seu GitHub
-Abra o terminal e execute os comandos para publicar este repositório na sua conta do GitHub:
+No seu terminal atual, execute o comando abaixo para salvar e organizar seus arquivos no iCloud:
 
 ```bash
-git init
-git add .
-git commit -m "feat: backup completo de dotfiles, apps e configurações"
-git branch -M main
-
-# Se você possui o GitHub CLI (gh) instalado:
-gh repo create dotfiles --public --source=. --remote=origin --push
-
-# Ou adicione o remote manualmente (substituindo pela URL do seu repositório criado no GitHub):
-# git remote add origin https://github.com/DalPra0/dotfiles.git
-# git push -u origin main
+/Users/lucasdalprabrascher/.gemini/antigravity/scratch/dotfiles/scripts/backup_to_icloud.sh
 ```
+
+### O que o backup do iCloud inclui:
+- 📁 **Developer**: Todos os seus projetos de código (sem `node_modules` para economizar espaço).
+- 📁 **ZenBrowser**: Seu perfil completo (Abas abertas, Favoritos, Extensões e Senhas salvas).
+- 📁 **Raycast**: Todas as suas Extensões, Atalhos, Snippets, histórico e configurações de IA.
+- 📁 **Projetos_IDEs**: Projetos do CLion, IntelliJ e PyCharm.
+- 📁 **Seguranca**: Arquivo `.zip` criptografado com senha contendo suas chaves SSH (`~/.ssh`).
 
 ---
 
-## 🧹 Passo 2: Como Formatar o Mac Limpo
+## 🧹 Como Formatar o Mac Limpo
 
 1. Desligue seu Mac.
-2. Ligue mantendo pressionado o botão de **Ligar (Power)** no Apple Silicon (M1/M2/M3/M4) até ver "Carregando opções de inicialização".
+2. Ligue mantendo pressionado o botão de **Ligar (Power)** no Apple Silicon (M1/M2/M3/M4) até ver *"Carregando opções de inicialização"*.
 3. Selecione **Opções** > **Utilitário de Disco**.
 4. Apague a unidade principal (`Macintosh HD`) selecionando o formato **APFS**.
 5. Saia do Utilitário de Disco e selecione **Reinstalar macOS**.
 
 ---
 
-## ⚡ Passo 3: O que fazer APÓS formatar (Restauração do zero)
+## ⚡ Passo a Passo Pós-Formatação
 
-Em um Mac recém-instalado, abra o **Terminal** e execute apenas este comando:
+1. Faça login na sua conta **Apple ID**.
+2. Abra o **Terminal**.
+3. Execute o comando de restauração:
 
 ```bash
-git clone https://github.com/DalPra0/dotfiles.git ~/dotfiles && cd ~/dotfiles && chmod +x setup.sh && ./setup.sh
+git clone https://github.com/DalPra0/dotfiles.git ~/dotfiles && cd ~/dotfiles && ./setup.sh
 ```
 
 ### O que o `setup.sh` fará automaticamente:
 1. Instalará o **Xcode Command Line Tools**.
 2. Instalará o **Homebrew**.
-3. Baixará e instalará **todos os seus apps e ferramentas CLI** do `Brewfile` (Chrome, Zed, Figma, Aerospace, Raycast, Notion, etc.).
-4. Instalará o **Oh My Zsh**.
-5. Restaurará todos os arquivos de configuração (`.zshrc`, `.gitconfig`, `.config/*`).
-6. Aplicará ajustes de sistema do macOS.
-
----
-
-## 🔐 Restaurando suas chaves SSH privadas
-
-Copie o arquivo `.zip` salvo no seu iCloud/Pen Drive para o novo Mac e descompacte suas chaves de volta para a pasta home:
-```bash
-unzip ~/Downloads/mac_private_keys_*.zip -d ~/.ssh/
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/id_* 2>/dev/null || true
-```
+3. Baixará e instalará **todos os seus apps e ferramentas CLI** do `Brewfile` (Raycast, Zen, Chrome, Cursor, Zed, Figma, Notion, Discord, WhatsApp, Zoom, Steam, etc.).
+4. Instalará o **Oh My Zsh** e o **Antigravity CLI**.
+5. Restaurará seus **Dotfiles** (`.zshrc`, `.gitconfig`, `.config/*`).
+6. Restaurará automaticamente do iCloud Drive a pasta **`Developer`**, o perfil do **Zen Browser** (com senhas e abas) e do **Raycast** (com atalhos e extensões).
