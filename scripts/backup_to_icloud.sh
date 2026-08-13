@@ -36,8 +36,15 @@ mkdir -p "$BACKUP_DIR"/{Developer,ZenBrowser,Raycast,Projetos_IDEs,Dotfiles,Segu
 
 # 1. Backup do Zen Browser (Perfil, Abas, Senhas, Extensões)
 info "1/6 Backup do Zen Browser (Perfil completo, senhas, abas)..."
-ZEN_SRC="$HOME/Library/Application Support/Zen"
+ZEN_SRC_UPPER="$HOME/Library/Application Support/Zen"
+ZEN_SRC_LOWER="$HOME/Library/Application Support/zen"
+if [[ -d "$ZEN_SRC_LOWER" ]]; then
+    ZEN_SRC="$ZEN_SRC_LOWER"
+else
+    ZEN_SRC="$ZEN_SRC_UPPER"
+fi
 if [[ -d "$ZEN_SRC" ]]; then
+    info "Origem Zen detectada em: $ZEN_SRC"
     rsync -av --progress --exclude="Cache*" --exclude="Crash Reports" "$ZEN_SRC/" "$BACKUP_DIR/ZenBrowser/"
     success "Zen Browser salvo no iCloud!"
 else
