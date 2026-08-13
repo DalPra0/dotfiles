@@ -127,9 +127,9 @@ if [[ -d "$ICLOUD_BACKUP" ]]; then
         ZEN_BACKUP_DIR="$ICLOUD_BACKUP/ZenBrowser"
         ZEN_DEST_UPPER="$HOME/Library/Application Support/Zen"
         ZEN_DEST_LOWER="$HOME/Library/Application Support/zen"
-        ZEN_ITEMS_TOTAL="$(find "$ZEN_BACKUP_DIR" -mindepth 1 | wc -l | tr -d ' ')"
+        ZEN_FIRST_ITEM="$(find "$ZEN_BACKUP_DIR" -mindepth 1 -print -quit)"
 
-        if [[ "$ZEN_ITEMS_TOTAL" == "0" ]]; then
+        if [[ -z "$ZEN_FIRST_ITEM" ]]; then
             warn "Backup do Zen foi encontrado, mas está vazio: $ZEN_BACKUP_DIR"
         else
             if [[ -d "$ZEN_DEST_LOWER" ]]; then
@@ -141,7 +141,6 @@ if [[ -d "$ICLOUD_BACKUP" ]]; then
             mkdir -p "$ZEN_DEST"
             info "Origem Zen: $ZEN_BACKUP_DIR"
             info "Destino Zen: $ZEN_DEST"
-            info "Itens detectados no backup do Zen: $ZEN_ITEMS_TOTAL"
 
             if rsync -avh --progress --stats --partial --timeout=120 "$ZEN_BACKUP_DIR/" "$ZEN_DEST/"; then
                 success "Perfil do Zen Browser restaurado com sucesso!"
