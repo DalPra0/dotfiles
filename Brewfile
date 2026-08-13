@@ -55,8 +55,6 @@ brew "mas"
 brew "maven"
 # Open source relational database management system
 brew "mysql", restart_service: :changed
-# Fast, highly customisable system info script
-brew "neofetch"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
 # Renders an animated, color, ANSI-text loop of the Poptart Cat

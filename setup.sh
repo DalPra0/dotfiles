@@ -58,8 +58,11 @@ fi
 info "Instalando todos os aplicativos, CLI tools e casks via Brewfile..."
 brew update
 if [[ -f "$SCRIPT_DIR/Brewfile" ]]; then
-    brew bundle --file="$SCRIPT_DIR/Brewfile" || warn "Alguns pacotes podem ter tido avisos durante a instalação."
-    success "Aplicativos e pacotes instalados com sucesso!"
+    if brew bundle --file="$SCRIPT_DIR/Brewfile"; then
+        success "Aplicativos e pacotes instalados com sucesso!"
+    else
+        warn "brew bundle encontrou erros. Revise os itens com falha acima e rode novamente após corrigir."
+    fi
 else
     warn "Brewfile não encontrado em $SCRIPT_DIR/Brewfile"
 fi
@@ -120,11 +123,31 @@ if [[ -d "$ICLOUD_BACKUP" ]]; then
     # 6.1 Restaurar Perfil do Zen Browser
     if [[ -d "$ICLOUD_BACKUP/ZenBrowser" ]]; then
         info "Restaurando perfil completo do Zen Browser (abas, favoritos, senhas)..."
-        mkdir -p "$HOME/Library/Application Support/Zen"
-        if rsync -avh --progress --stats --partial --timeout=120 "$ICLOUD_BACKUP/ZenBrowser/" "$HOME/Library/Application Support/Zen/"; then
-            success "Perfil do Zen Browser restaurado com sucesso!"
+
+        ZEN_BACKUP_DIR="$ICLOUD_BACKUP/ZenBrowser"
+        ZEN_DEST_UPPER="$HOME/Library/Application Support/Zen"
+        ZEN_DEST_LOWER="$HOME/Library/Application Support/zen"
+        ZEN_ITEMS_TOTAL="$(find "$ZEN_BACKUP_DIR" -mindepth 1 | wc -l | tr -d ' ')"
+
+        if [[ "$ZEN_ITEMS_TOTAL" == "0" ]]; then
+            warn "Backup do Zen foi encontrado, mas está vazio: $ZEN_BACKUP_DIR"
         else
-            warn "A restauração do Zen falhou ou atingiu timeout (120s sem transferência). Tente novamente com o iCloud totalmente sincronizado e o Zen fechado."
+            if [[ -d "$ZEN_DEST_LOWER" ]]; then
+                ZEN_DEST="$ZEN_DEST_LOWER"
+            else
+                ZEN_DEST="$ZEN_DEST_UPPER"
+            fi
+
+            mkdir -p "$ZEN_DEST"
+            info "Origem Zen: $ZEN_BACKUP_DIR"
+            info "Destino Zen: $ZEN_DEST"
+            info "Itens detectados no backup do Zen: $ZEN_ITEMS_TOTAL"
+
+            if rsync -avh --progress --stats --partial --timeout=120 "$ZEN_BACKUP_DIR/" "$ZEN_DEST/"; then
+                success "Perfil do Zen Browser restaurado com sucesso!"
+            else
+                warn "A restauração do Zen falhou ou atingiu timeout (120s sem transferência). Tente novamente com o iCloud totalmente sincronizado e o Zen fechado."
+            fi
         fi
     fi
 
