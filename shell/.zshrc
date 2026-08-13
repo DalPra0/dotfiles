@@ -116,7 +116,6 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-fpath=(path/to/zsh-completions/src $fpath)source $(brew --prefix)/share/zsh-history-substring-search/zsh-history-substring-search.zsh
 # cmatrix
 # { sleep 1 ; echo starwars ; sleep 99999 ;} | nc -c telehack.com 23
 
@@ -220,7 +219,13 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 
-export JAVA_HOME=$(/usr/libexec/java_home -v 11)
+if command -v /usr/libexec/java_home >/dev/null 2>&1; then
+  JAVA11_HOME="$(/usr/libexec/java_home -v 11 2>/dev/null || true)"
+  if [ -n "$JAVA11_HOME" ]; then
+    export JAVA_HOME="$JAVA11_HOME"
+  fi
+  unset JAVA11_HOME
+fi
 export PATH="$HOME/.local/bin:$PATH"
 
 export ANTHROPIC_BASE_URL=http://localhost:11434

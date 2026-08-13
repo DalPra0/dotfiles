@@ -19,6 +19,17 @@ info() { echo "${BLUE}${BOLD}[INFO]${RESET} $1"; }
 success() { echo "${GREEN}${BOLD}[OK]${RESET} $1"; }
 warn() { echo "${YELLOW}${BOLD}[AVISO]${RESET} $1"; }
 
+PENDING_INSTALLS=()
+
+add_pending_install() {
+    local item="$1"
+    local existing
+    for existing in "${PENDING_INSTALLS[@]}"; do
+        [[ "$existing" == "$item" ]] && return 0
+    done
+    PENDING_INSTALLS+=("$item")
+}
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ICLOUD_BACKUP="$HOME/Library/Mobile Documents/com~apple~CloudDocs/Backup_Mac_Formatacao"
 
@@ -81,15 +92,60 @@ if [[ -f "$SCRIPT_DIR/Brewfile" ]]; then
     else
         warn "brew bundle encontrou erros. Revise os itens com falha acima e rode novamente após corrigir."
     fi
+
+    BREW_CHECK_OUTPUT="$(brew bundle check --file="$SCRIPT_DIR/Brewfile" --verbose 2>&1 || true)"
+    while IFS= read -r line; do
+        if [[ "$line" == *" is not installed." || "$line" == *" is not tapped." ]]; then
+            add_pending_install "$line"
+        fi
+    done <<< "$BREW_CHECK_OUTPUT"
 else
     warn "Brewfile não encontrado em $SCRIPT_DIR/Brewfile"
+    add_pending_install "Brewfile não encontrado em $SCRIPT_DIR/Brewfile"
 fi
 
 # 4. Instalar Oh My Zsh (opcional)
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     info "Instalando Oh My Zsh..."
     RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended || true
-    success "Oh My Zsh instalado."
+    if [[ -d "$HOME/.oh-my-zsh" ]]; then
+        success "Oh My Zsh instalado."
+    else
+        warn "Falha ao instalar Oh My Zsh."
+        add_pending_install "Oh My Zsh"
+    fi
+fi
+
+# 4.1 Instalar plugins externos do Oh My Zsh
+if [[ -d "$HOME/.oh-my-zsh" ]]; then
+    info "Verificando plugins externos do Oh My Zsh..."
+    ZSH_CUSTOM_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+    mkdir -p "$ZSH_CUSTOM_DIR/plugins"
+
+    install_omz_plugin() {
+        local name="$1"
+        local repo="$2"
+        local target="$ZSH_CUSTOM_DIR/plugins/$name"
+        if [[ -d "$target" ]]; then
+            success "Plugin já presente: $name"
+        elif command -v git &>/dev/null; then
+            if git clone --depth 1 "$repo" "$target"; then
+                success "Plugin instalado: $name"
+            else
+                warn "Falha ao instalar plugin $name de $repo"
+                add_pending_install "Plugin Oh My Zsh: $name"
+                return 1
+            fi
+        else
+            warn "Git não encontrado. Não foi possível instalar plugin $name"
+            add_pending_install "Plugin Oh My Zsh: $name (git ausente)"
+            return 1
+        fi
+    }
+
+    install_omz_plugin "zsh-autosuggestions" "https://github.com/zsh-users/zsh-autosuggestions"
+    install_omz_plugin "zsh-syntax-highlighting" "https://github.com/zsh-users/zsh-syntax-highlighting"
+    install_omz_plugin "zsh-history-substring-search" "https://github.com/zsh-users/zsh-history-substring-search"
 fi
 
 # 5. Restaurar Dotfiles & Configurações de Aplicativos
@@ -209,7 +265,16 @@ fi
 # 7. Instalar Antigravity CLI e App
 info "Instalando Antigravity CLI..."
 if ! command -v agy &>/dev/null; then
-    curl -fsSL https://antigravity.google.com/install.sh | bash || true
+    if curl -fsSL https://antigravity.google.com/install.sh | bash; then
+        success "Antigravity CLI instalado."
+    else
+        warn "Falha ao instalar Antigravity CLI."
+        add_pending_install "Antigravity CLI (agy)"
+    fi
+fi
+
+if ! command -v agy &>/dev/null; then
+    add_pending_install "Antigravity CLI (agy)"
 fi
 
 # 8. Preferências Customizadas do macOS
@@ -221,6 +286,16 @@ defaults write NSGlobalDomain InitialKeyRepeat -int 15
 defaults write com.apple.finder CreateDesktop -bool true
 
 killall Finder &>/dev/null || true
+
+echo ""
+if [[ ${#PENDING_INSTALLS[@]} -gt 0 ]]; then
+    warn "Os seguintes itens NÃO foram instalados/configurados:"
+    for item in "${PENDING_INSTALLS[@]}"; do
+        echo " - $item"
+    done
+else
+    success "Nenhum item pendente de instalação foi detectado."
+fi
 
 echo ""
 echo "${GREEN}${BOLD}====================================================${RESET}"
