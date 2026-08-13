@@ -28,13 +28,31 @@ echo "${BOLD}     Iniciando Restauração Automatizada do Mac      ${RESET}"
 echo "${BOLD}====================================================${RESET}"
 echo ""
 
+info "Este processo vai instalar pacotes, apps, ajustar preferências e restaurar dados do iCloud."
+read -r -p "Deseja continuar? [y/N]: " CONFIRM_SETUP
+if [[ ! "$CONFIRM_SETUP" =~ ^[Yy]$ ]]; then
+    warn "Restauração cancelada pelo usuário."
+    exit 0
+fi
+
+info "Solicitando permissões de administrador no início para evitar interrupções no meio do processo..."
+sudo -v
+while true; do
+    sudo -n true
+    sleep 60
+    kill -0 "$$" || exit
+done 2>/dev/null &
+
 # 1. Verificar Xcode Command Line Tools
 info "Verificando Xcode Command Line Tools..."
 if ! xcode-select -p &>/dev/null; then
     info "Instalando Xcode Command Line Tools..."
-    xcode-select --install
-    echo "Pressione ENTER após terminar a instalação da janela do Xcode..."
-    read -r
+    xcode-select --install || true
+    info "Aguardando conclusão da instalação do Xcode Command Line Tools..."
+    until xcode-select -p &>/dev/null; do
+        sleep 5
+    done
+    success "Xcode Command Line Tools instalado."
 else
     success "Xcode Command Line Tools já instalado."
 fi
@@ -127,9 +145,9 @@ if [[ -d "$ICLOUD_BACKUP" ]]; then
         ZEN_BACKUP_DIR="$ICLOUD_BACKUP/ZenBrowser"
         ZEN_DEST_UPPER="$HOME/Library/Application Support/Zen"
         ZEN_DEST_LOWER="$HOME/Library/Application Support/zen"
-        ZEN_ITEMS_TOTAL="$(find "$ZEN_BACKUP_DIR" -mindepth 1 | wc -l | tr -d ' ')"
+        ZEN_FIRST_ITEM="$(find "$ZEN_BACKUP_DIR" -mindepth 1 -print -quit)"
 
-        if [[ "$ZEN_ITEMS_TOTAL" == "0" ]]; then
+        if [[ -z "$ZEN_FIRST_ITEM" ]]; then
             warn "Backup do Zen foi encontrado, mas está vazio: $ZEN_BACKUP_DIR"
         else
             if [[ -d "$ZEN_DEST_LOWER" ]]; then
@@ -141,7 +159,6 @@ if [[ -d "$ICLOUD_BACKUP" ]]; then
             mkdir -p "$ZEN_DEST"
             info "Origem Zen: $ZEN_BACKUP_DIR"
             info "Destino Zen: $ZEN_DEST"
-            info "Itens detectados no backup do Zen: $ZEN_ITEMS_TOTAL"
 
             if rsync -avh --progress --stats --partial --timeout=120 "$ZEN_BACKUP_DIR/" "$ZEN_DEST/"; then
                 success "Perfil do Zen Browser restaurado com sucesso!"
