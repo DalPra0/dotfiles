@@ -28,13 +28,31 @@ echo "${BOLD}     Iniciando Restauração Automatizada do Mac      ${RESET}"
 echo "${BOLD}====================================================${RESET}"
 echo ""
 
+info "Este processo vai instalar pacotes, apps, ajustar preferências e restaurar dados do iCloud."
+read -r -p "Deseja continuar? [y/N]: " CONFIRM_SETUP
+if [[ ! "$CONFIRM_SETUP" =~ ^[Yy]$ ]]; then
+    warn "Restauração cancelada pelo usuário."
+    exit 0
+fi
+
+info "Solicitando permissões de administrador no início para evitar interrupções no meio do processo..."
+sudo -v
+while true; do
+    sudo -n true
+    sleep 60
+    kill -0 "$$" || exit
+done 2>/dev/null &
+
 # 1. Verificar Xcode Command Line Tools
 info "Verificando Xcode Command Line Tools..."
 if ! xcode-select -p &>/dev/null; then
     info "Instalando Xcode Command Line Tools..."
-    xcode-select --install
-    echo "Pressione ENTER após terminar a instalação da janela do Xcode..."
-    read -r
+    xcode-select --install || true
+    info "Aguardando conclusão da instalação do Xcode Command Line Tools..."
+    until xcode-select -p &>/dev/null; do
+        sleep 5
+    done
+    success "Xcode Command Line Tools instalado."
 else
     success "Xcode Command Line Tools já instalado."
 fi
