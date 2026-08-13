@@ -92,6 +92,34 @@ if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
     success "Oh My Zsh instalado."
 fi
 
+# 4.1 Instalar plugins externos do Oh My Zsh
+if [[ -d "$HOME/.oh-my-zsh" ]]; then
+    info "Verificando plugins externos do Oh My Zsh..."
+    ZSH_CUSTOM_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+    mkdir -p "$ZSH_CUSTOM_DIR/plugins"
+
+    install_omz_plugin() {
+        local name="$1"
+        local repo="$2"
+        local target="$ZSH_CUSTOM_DIR/plugins/$name"
+        if [[ -d "$target" ]]; then
+            success "Plugin já presente: $name"
+        elif command -v git &>/dev/null; then
+            if git clone --depth 1 "$repo" "$target"; then
+                success "Plugin instalado: $name"
+            else
+                warn "Falha ao instalar plugin $name de $repo"
+            fi
+        else
+            warn "Git não encontrado. Não foi possível instalar plugin $name"
+        fi
+    }
+
+    install_omz_plugin "zsh-autosuggestions" "https://github.com/zsh-users/zsh-autosuggestions"
+    install_omz_plugin "zsh-syntax-highlighting" "https://github.com/zsh-users/zsh-syntax-highlighting"
+    install_omz_plugin "zsh-history-substring-search" "https://github.com/zsh-users/zsh-history-substring-search"
+fi
+
 # 5. Restaurar Dotfiles & Configurações de Aplicativos
 info "Restaurando arquivos de configuração (dotfiles)..."
 mkdir -p "$HOME/.config"
