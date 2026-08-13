@@ -121,8 +121,11 @@ if [[ -d "$ICLOUD_BACKUP" ]]; then
     if [[ -d "$ICLOUD_BACKUP/ZenBrowser" ]]; then
         info "Restaurando perfil completo do Zen Browser (abas, favoritos, senhas)..."
         mkdir -p "$HOME/Library/Application Support/Zen"
-        rsync -av "$ICLOUD_BACKUP/ZenBrowser/" "$HOME/Library/Application Support/Zen/"
-        success "Perfil do Zen Browser restaurado com sucesso!"
+        if rsync -avh --progress --stats --partial --timeout=120 "$ICLOUD_BACKUP/ZenBrowser/" "$HOME/Library/Application Support/Zen/"; then
+            success "Perfil do Zen Browser restaurado com sucesso!"
+        else
+            warn "A restauração do Zen falhou ou atingiu timeout (120s sem transferência). Tente novamente com o iCloud totalmente sincronizado e o Zen fechado."
+        fi
     fi
 
     # 6.2 Restaurar Raycast (Extensões, Atalhos, IA, Snippets)
