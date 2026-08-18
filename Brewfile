@@ -19,8 +19,6 @@ brew "cmatrix"
 brew "cocoapods"
 # Pack, ship and run any application as a lightweight container
 brew "docker"
-# Like neofetch, but much faster because written mostly in C
-brew "fastfetch"
 # Play, record, convert, and stream select audio and video codecs
 brew "ffmpeg"
 # Command-line fuzzy finder written in Go
@@ -204,7 +202,6 @@ cask "cursor"
 cask "discord"
 cask "ghostty"
 cask "obsidian"
-cask "prism-launcher"
 cask "spotify"
 cask "steam"
 cask "visual-studio-code"
